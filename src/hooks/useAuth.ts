@@ -51,31 +51,16 @@ export const useAuth = () => {
     const validCode = tempCodes.find((c: any) => c.code === code && !c.used);
     
     if (validCode) {
-      return true;
-    }
-
-    return false;
-  };
-
-  const loginWithCodeAndUser = (code: string, tempUserId: string): boolean => {
-    const tempCodes = JSON.parse(localStorage.getItem('tempCodes') || '[]');
-    const tempUsers = JSON.parse(localStorage.getItem('tempUsers') || '[]');
-    
-    const validCode = tempCodes.find((c: any) => c.code === code && !c.used);
-    const selectedUser = tempUsers.find((u: any) => u.id === tempUserId && u.isActive);
-    
-    if (validCode && selectedUser) {
       const tempUser: User = {
-        id: selectedUser.id,
-        email: selectedUser.email || `${selectedUser.name.toLowerCase().replace(/\s+/g, '')}@temporal.com`,
+        id: `temp-${Date.now()}`,
+        email: `temp-${code}@temporal.com`,
         role: 'temp',
-        name: selectedUser.name
+        name: `Usuario Temporal ${code}`
       };
       
       // Marcar código como usado
       validCode.used = true;
       validCode.userId = tempUser.id;
-      validCode.userName = tempUser.name;
       localStorage.setItem('tempCodes', JSON.stringify(tempCodes));
       
       setUser(tempUser);
@@ -91,5 +76,5 @@ export const useAuth = () => {
     localStorage.removeItem('currentUser');
   };
 
-  return { user, login, loginWithCode, loginWithCodeAndUser, logout, loading };
+  return { user, login, loginWithCode, logout, loading };
 };

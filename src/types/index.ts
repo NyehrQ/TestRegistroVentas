@@ -37,14 +37,4 @@ export interface TempCode {
   generated: string;
   used: boolean;
   userId?: string;
-  userName?: string;
-}
-
-export interface TempUser {
-  id: string;
-  name: string;
-  phone?: string;
-  email?: string;
-  createdAt: string;
-  isActive: boolean;
 }

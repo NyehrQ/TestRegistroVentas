@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Product, Sale, TempCode, TempUser } from '../types';
+import { Product, Sale, TempCode } from '../types';
 
 export const useData = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [pendingSales, setPendingSales] = useState<Sale[]>([]);
   const [tempCodes, setTempCodes] = useState<TempCode[]>([]);
-  const [tempUsers, setTempUsers] = useState<TempUser[]>([]);
 
   useEffect(() => {
     loadData();
@@ -29,33 +28,6 @@ export const useData = () => {
       localStorage.setItem('products', JSON.stringify(defaultProducts));
     }
 
-    // Cargar usuarios temporales de ejemplo
-    const defaultTempUsers: TempUser[] = [
-      { 
-        id: 'temp-1', 
-        name: 'Juan Pérez', 
-        phone: '+1234567890', 
-        email: 'juan@example.com',
-        createdAt: new Date().toISOString(),
-        isActive: true 
-      },
-      { 
-        id: 'temp-2', 
-        name: 'María García', 
-        phone: '+0987654321', 
-        email: 'maria@example.com',
-        createdAt: new Date().toISOString(),
-        isActive: true 
-      }
-    ];
-
-    const savedTempUsers = localStorage.getItem('tempUsers');
-    setTempUsers(savedTempUsers ? JSON.parse(savedTempUsers) : defaultTempUsers);
-    
-    if (!savedTempUsers) {
-      localStorage.setItem('tempUsers', JSON.stringify(defaultTempUsers));
-    }
-
     // Cargar ventas
     const savedSales = localStorage.getItem('sales');
     setSales(savedSales ? JSON.parse(savedSales) : []);
@@ -67,57 +39,6 @@ export const useData = () => {
     // Cargar códigos temporales
     const savedTempCodes = localStorage.getItem('tempCodes');
     setTempCodes(savedTempCodes ? JSON.parse(savedTempCodes) : []);
-  };
-
-  // CRUD Productos
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    const newProduct: Product = {
-      ...product,
-      id: `product-${Date.now()}`
-    };
-    const newProducts = [...products, newProduct];
-    setProducts(newProducts);
-    localStorage.setItem('products', JSON.stringify(newProducts));
-  };
-
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    const newProducts = products.map(p => 
-      p.id === id ? { ...p, ...updates } : p
-    );
-    setProducts(newProducts);
-    localStorage.setItem('products', JSON.stringify(newProducts));
-  };
-
-  const deleteProduct = (id: string) => {
-    const newProducts = products.filter(p => p.id !== id);
-    setProducts(newProducts);
-    localStorage.setItem('products', JSON.stringify(newProducts));
-  };
-
-  // CRUD Usuarios Temporales
-  const addTempUser = (user: Omit<TempUser, 'id' | 'createdAt'>) => {
-    const newUser: TempUser = {
-      ...user,
-      id: `temp-${Date.now()}`,
-      createdAt: new Date().toISOString()
-    };
-    const newTempUsers = [...tempUsers, newUser];
-    setTempUsers(newTempUsers);
-    localStorage.setItem('tempUsers', JSON.stringify(newTempUsers));
-  };
-
-  const updateTempUser = (id: string, updates: Partial<TempUser>) => {
-    const newTempUsers = tempUsers.map(u => 
-      u.id === id ? { ...u, ...updates } : u
-    );
-    setTempUsers(newTempUsers);
-    localStorage.setItem('tempUsers', JSON.stringify(newTempUsers));
-  };
-
-  const deleteTempUser = (id: string) => {
-    const newTempUsers = tempUsers.filter(u => u.id !== id);
-    setTempUsers(newTempUsers);
-    localStorage.setItem('tempUsers', JSON.stringify(newTempUsers));
   };
 
   const addSale = (sale: Sale) => {
@@ -169,16 +90,9 @@ export const useData = () => {
 
   return {
     products,
-    tempUsers,
     sales,
     pendingSales,
     tempCodes,
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    addTempUser,
-    updateTempUser,
-    deleteTempUser,
     addSale,
     approveSale,
     rejectSale,
