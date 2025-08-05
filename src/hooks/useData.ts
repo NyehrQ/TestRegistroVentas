@@ -1,6 +1,41 @@
 import { useState, useEffect } from 'react';
 import { Product, Sale, TempCode } from '../types';
 
+const PRODUCTS_RANGE = import.meta.env.VITE_PRODUCTS_RANGE || 'Products!A2:E';
+const SALES_RANGE = import.meta.env.VITE_SALES_RANGE || 'Sales!A1';
+
+const fetchProductsFromSheet = async (): Promise<Product[]> => {
+  const sheetId = import.meta.env.VITE_PRODUCTS_SHEET_ID;
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+  if (!sheetId || !apiKey) {
+    throw new Error('Missing Google Sheets configuration');
+  }
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${PRODUCTS_RANGE}?key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return (data.values || []).map((row: string[]) => ({
+    id: row[0],
+    name: row[1],
+    minorPrice: Number(row[2]),
+    majorPrice: Number(row[3]),
+    category: row[4]
+  }));
+};
+
+const recordSaleToSheet = async (sale: Sale) => {
+  const sheetId = import.meta.env.VITE_SALES_SHEET_ID;
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+  if (!sheetId || !apiKey) return;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${SALES_RANGE}:append?valueInputOption=RAW&key=${apiKey}`;
+  await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      values: [[sale.id, sale.userName, sale.total, sale.date, sale.status]]
+    })
+  });
+};
+
 export const useData = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -11,21 +46,15 @@ export const useData = () => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    // Cargar productos de ejemplo
-    const defaultProducts: Product[] = [
-      { id: '1', name: 'Producto A', minorPrice: 100, majorPrice: 85, category: 'Categoría 1' },
-      { id: '2', name: 'Producto B', minorPrice: 200, majorPrice: 170, category: 'Categoría 1' },
-      { id: '3', name: 'Producto C', minorPrice: 150, majorPrice: 125, category: 'Categoría 2' },
-      { id: '4', name: 'Producto D', minorPrice: 300, majorPrice: 250, category: 'Categoría 2' },
-      { id: '5', name: 'Producto E', minorPrice: 80, majorPrice: 65, category: 'Categoría 3' },
-    ];
-
-    const savedProducts = localStorage.getItem('products');
-    setProducts(savedProducts ? JSON.parse(savedProducts) : defaultProducts);
-    
-    if (!savedProducts) {
-      localStorage.setItem('products', JSON.stringify(defaultProducts));
+  const loadData = async () => {
+    // Cargar productos desde Google Sheets o desde localStorage si falla
+    try {
+      const sheetProducts = await fetchProductsFromSheet();
+      setProducts(sheetProducts);
+      localStorage.setItem('products', JSON.stringify(sheetProducts));
+    } catch {
+      const savedProducts = localStorage.getItem('products');
+      setProducts(savedProducts ? JSON.parse(savedProducts) : []);
     }
 
     // Cargar ventas
@@ -41,7 +70,7 @@ export const useData = () => {
     setTempCodes(savedTempCodes ? JSON.parse(savedTempCodes) : []);
   };
 
-  const addSale = (sale: Sale) => {
+  const addSale = async (sale: Sale) => {
     if (sale.status === 'pending') {
       const newPendingSales = [...pendingSales, sale];
       setPendingSales(newPendingSales);
@@ -50,6 +79,12 @@ export const useData = () => {
       const newSales = [...sales, sale];
       setSales(newSales);
       localStorage.setItem('sales', JSON.stringify(newSales));
+    }
+
+    try {
+      await recordSaleToSheet(sale);
+    } catch (err) {
+      console.error('No se pudo registrar la venta en Google Sheets', err);
     }
   };
 

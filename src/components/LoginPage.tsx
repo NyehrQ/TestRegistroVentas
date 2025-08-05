@@ -27,9 +27,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       } else {
         setError('Credenciales incorrectas');
       }
-    } catch (err) {
-      setError('Error al iniciar sesión');
-    } finally {
+      } catch {
+        setError('Error al iniciar sesión');
+      } finally {
       setLoading(false);
     }
   };
@@ -46,9 +46,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       } else {
         setError('Código inválido o ya utilizado');
       }
-    } catch (err) {
-      setError('Error al validar código');
-    } finally {
+      } catch {
+        setError('Error al validar código');
+      } finally {
       setLoading(false);
     }
   };
