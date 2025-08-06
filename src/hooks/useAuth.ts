@@ -28,8 +28,11 @@ export const useAuth = () => {
     }
 
     // Simulación de otros usuarios
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find((u: any) => u.email === email && u.password === password);
+      interface StoredUser extends User {
+        password: string;
+      }
+      const users: StoredUser[] = JSON.parse(localStorage.getItem('users') || '[]');
+      const foundUser = users.find((u) => u.email === email && u.password === password);
     
     if (foundUser) {
       const userInfo: User = {
@@ -47,8 +50,13 @@ export const useAuth = () => {
   };
 
   const loginWithCode = (code: string): boolean => {
-    const tempCodes = JSON.parse(localStorage.getItem('tempCodes') || '[]');
-    const validCode = tempCodes.find((c: any) => c.code === code && !c.used);
+      interface StoredTempCode {
+        code: string;
+        used: boolean;
+        userId?: string;
+      }
+      const tempCodes: StoredTempCode[] = JSON.parse(localStorage.getItem('tempCodes') || '[]');
+      const validCode = tempCodes.find((c) => c.code === code && !c.used);
     
     if (validCode) {
       const tempUser: User = {

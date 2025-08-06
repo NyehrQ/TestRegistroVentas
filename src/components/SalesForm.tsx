@@ -28,7 +28,11 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onClose }) => {
     setSaleItems(saleItems.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof SaleItem, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof SaleItem,
+    value: string | number
+  ) => {
     const newItems = [...saleItems];
     newItems[index] = { ...newItems[index], [field]: value };
 
@@ -88,7 +92,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onClose }) => {
         isMajor
       };
 
-      addSale(newSale);
+      await addSale(newSale);
       onClose();
     } catch (error) {
       console.error('Error al guardar venta:', error);
@@ -213,8 +217,8 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onClose }) => {
                   Resumen de Venta
                 </div>
                 <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  isMajor 
-                    ? 'bg-purple-100 text-purple-800' 
+                  isMajor
+                    ? 'bg-purple-100 text-purple-800'
                     : 'bg-blue-100 text-blue-800'
                 }`}>
                   {isMajor ? 'Venta Mayorista' : 'Venta Minorista'}
@@ -239,25 +243,25 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onClose }) => {
               )}
             </div>
           )}
-        </form>
 
-        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || saleItems.length === 0}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {loading ? 'Guardando...' : 'Guardar Venta'}
-          </button>
-        </div>
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading || saleItems.length === 0}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {loading ? 'Guardando...' : 'Guardar Venta'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
